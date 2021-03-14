@@ -56,13 +56,17 @@ class DiscordListener(discord.Client):
 
     async def on_message(self, message: discord.Message):
         if message.author == self.user or message.author.bot:
+            logging.debug('Message is from bot, ignoring...')
             return
         if message.content.startswith('!osuirc'):
+            logging.debug('Message is our command, handling...')
             return await self.handle_register(message)
         if str(message.channel.id) != self.channel:
+            logging.debug('Message is not in a watched channel, ignoring...')
             return
         creds = self.data.get(str(message.author.id))
         if not creds or not creds.get('nickname') or not creds.get('token'):
+            logging.debug('Credentials for this users are empty or wrong, ignoring...')
             return
         logging.info('Fowarding message to osu!')
         self.forward(message, creds)
