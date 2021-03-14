@@ -34,6 +34,7 @@ class BanchoListener(osu_irc.Client):
         self.poster = poster
 
     def watch(self, channel: str):
+        channel = channel.strip().strip('#')
         self.channel = channel
 
     async def onReady(self):
@@ -42,12 +43,15 @@ class BanchoListener(osu_irc.Client):
         logging.debug('IRC bot ready')
 
     async def onMessage(self, message):
+        if message.Channel.name != self.channel:
+            return
         self.poster.post(message)
 
 if __name__ == '__main__':
     try:
         import config
 
+        logging.basicConfig(level=logging.DEBUG)
         bot = BanchoListener(token=config.irc_password, nickname=config.username)
         poster = MessagePoster(config.webhook)
         bot.attach_poster(poster)

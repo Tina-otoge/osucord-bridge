@@ -40,12 +40,13 @@ class DiscordListener(discord.Client):
             await message.channel.send('Invalid parameters, you need to provide your osu! nickname followed by your IRC token')
 
     def forward(self, message: discord.Message, creds: dict):
-        subprocess.Popen([
+        process = subprocess.Popen([
             'python',
             self.poster_path,
             creds['nickname'], creds['token'],
             message.content,
         ])
+        logging.debug(process)
         return True
 
     async def on_ready(self):
@@ -58,12 +59,13 @@ class DiscordListener(discord.Client):
             return
         if message.content.startswith('!osuirc'):
             return await self.handle_register(message)
+        if str(message.channel.id) != self.channel:
+            return
         creds = self.data.get(str(message.author.id))
         if not creds or not creds.get('nickname') or not creds.get('token'):
             return
         logging.info('Fowarding message to osu!')
-        if self.forward(message, creds):
-            await message.add_reaction('👌')
+        self.forward(message, creds)
 
 
 import config
